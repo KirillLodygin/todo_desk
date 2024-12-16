@@ -17,7 +17,7 @@ export const CounterAndFilters: React.FC<Props> = ({
 }) => {
   const dispatch = useAppDispatch()
 
-  const onFilterButtonClick = (val: string) => {
+  const onFilterButtonClick = (val: TodosFilterType) => {
     dispatch(setNewFilter(val))
   }
 
