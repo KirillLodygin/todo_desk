@@ -1,90 +1,96 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react'
-import { Provider } from 'react-redux'
-import configureStore from 'redux-mock-store'
-import { CustomCheckbox } from '../src/app/view/CheckboxGroup' // путь к вашему компоненту
+import { render, fireEvent, screen } from '@testing-library/react'
+import { act } from 'react'
+import { CustomCheckbox } from '../src/app/view/CheckboxGroup'
 
-// Создаем mock store для тестирования redux actions
-const middlewares = []
-const mockStore = configureStore(middlewares)
-const initialState = {}
-const store = mockStore(initialState)
-
-jest.mock('../src/hooks', () => ({
-  useAppDispatch: () => jest.fn(),
+jest.mock('react-redux', () => ({
+  useDispatch: () => jest.fn(),
 }))
 
-describe('CustomCheckbox', () => {
-  it('should render correctly with default props', () => {
-    const { container } = render(
-      <Provider store={store}>
-        <CustomCheckbox />
-      </Provider>,
-    )
+const mockDispatch = jest.fn()
+
+beforeEach(() => {
+  jest.spyOn(React, 'useContext').mockImplementation(() => ({
+    store: {
+      getState: jest.fn(),
+      subscribe: jest.fn(),
+      dispatch: mockDispatch,
+    },
+  }))
+})
+
+afterEach(() => {
+  jest.clearAllMocks()
+})
+
+describe('CustomCheckbox component', () => {
+  it('should render correctly with initial props', () => {
+    const { container } = render(<CustomCheckbox isChecked={false} label="Test Label" />)
 
     expect(container.firstChild).toMatchSnapshot()
   })
 
-  it('should render correctly when isChecked is true', () => {
-    const { getByLabelText } = render(
-      <Provider store={store}>
-        <CustomCheckbox isChecked={true} label="Test Label" />
-      </Provider>,
-    )
+  it('should toggle the checked state when clicked', async () => {
+    render(<CustomCheckbox isChecked={false} label="Test Label" />)
 
-    const checkbox = getByLabelText('Test Label')
+    let checkbox = screen.getByRole('checkbox') as HTMLInputElement
+    expect(checkbox.checked).toBeFalsy()
+
+    await act(async () => {
+      fireEvent.click(checkbox)
+    })
+
+    checkbox = screen.getByRole('checkbox') as HTMLInputElement
     expect(checkbox.checked).toBeTruthy()
   })
 
-  it('should call updateTodoStatus when checkbox is clicked', async () => {
-    const updateTodoStatusMock = jest.fn()
-    const mockedUseAppDispatch = jest.fn().mockReturnValue(updateTodoStatusMock)
-    jest.mock('../src/hooks', () => ({
-      useAppDispatch: () => mockedUseAppDispatch(),
-    }))
+  it('should apply strike-through after 2 seconds of being checked', async () => {
+    jest.useFakeTimers() // Используем fake timers для управления временем
 
-    const { getByRole } = render(
-      <Provider store={store}>
-        <CustomCheckbox isChecked={false} label="Test Label" />
-      </Provider>,
-    )
+    render(<CustomCheckbox isChecked={true} label="Test Label" />)
 
-    const checkbox = getByRole('checkbox')
-    fireEvent.click(checkbox)
+    let labelElement = screen.getByText('Test Label')
+    expect(labelElement.classList.contains('line-through')).toBeFalsy()
 
-    await waitFor(() => {
-      expect(updateTodoStatusMock).toHaveBeenCalledWith('Test Label')
+    act(() => {
+      jest.advanceTimersByTime(1999) // Почти два секунды прошли
     })
+
+    labelElement = screen.getByText('Test Label')
+    expect(labelElement.classList.contains('line-through')).toBeFalsy()
+
+    act(() => {
+      jest.advanceTimersByTime(1) // Прошло ровно две секунды
+    })
+
+    labelElement = screen.getByText('Test Label')
+    expect(labelElement.classList.contains('line-through')).toBeTruthy()
+
+    jest.useRealTimers() // Возвращаем реальные таймеры после теста
   })
 
-  it('should toggle the checked state when clicked', async () => {
-    const { getByRole } = render(
-      <Provider store={store}>
-        <CustomCheckbox isChecked={false} label="Test Label" />
-      </Provider>,
-    )
+  it('should remove strike-through immediately when unchecked', async () => {
+    jest.useFakeTimers() // Используем fake timers для управления временем
 
-    const checkbox = getByRole('checkbox')
-    expect(checkbox.checked).toBeFalsy()
+    render(<CustomCheckbox isChecked={true} label="Test Label" />)
 
-    fireEvent.click(checkbox)
-    await waitFor(() => {
-      expect(checkbox.checked).toBeTruthy()
+    let labelElement = screen.getByText('Test Label')
+    expect(labelElement.classList.contains('line-through')).toBeFalsy()
+
+    act(() => {
+      jest.advanceTimersByTime(2000) // Проходит 2 секунды
     })
-  })
 
-  it('should apply strike through animation after 2 seconds of being checked', async () => {
-    const { getByText } = render(
-      <Provider store={store}>
-        <CustomCheckbox isChecked={true} label="Test Label" />
-      </Provider>,
-    )
+    labelElement = screen.getByText('Test Label')
+    expect(labelElement.classList.contains('line-through')).toBeTruthy()
 
-    const label = getByText('Test Label')
-    expect(label.classList.contains('line-through')).toBeFalsy()
+    await act(async () => {
+      fireEvent.click(screen.getByRole('checkbox')) // Снимаем галочку
+    })
 
-    await new Promise((resolve) => setTimeout(resolve, 2100)) // Ждем чуть больше 2 секунд
+    labelElement = screen.getByText('Test Label')
+    expect(labelElement.classList.contains('line-through')).toBeFalsy() // Убедимся, что зачёркивание убрано
 
-    expect(label.classList.contains('line-through')).toBeTruthy()
+    jest.useRealTimers() // Возвращаем реальные таймеры после теста
   })
 })

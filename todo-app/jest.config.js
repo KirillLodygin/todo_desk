@@ -1,17 +1,17 @@
 module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'jsdom',
-    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-    setupFilesAfterEnv: ['<rootDir>/setupTests.js'],
-    transform: {
-        '^.+\\.(ts|tsx)$': 'ts-jest'
+    moduleNameMapper: {
+        '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
+            '<rootDir>/__mocks__/fileMock.js',
+        '\\.(css|scss)$': 'identity-obj-proxy',
     },
-    transformIgnorePatterns: [
-        '/node_modules/(?!(my-custom-module)/)'
-    ],
-    globals: {
-        'ts-jest': {
-            tsConfig: 'tsconfig.json'
-        }
-    }
+    testPathIgnorePatterns: ['/node_modules/', '/lib/'],
+    transform: {
+        '^.+\\.js$': 'babel-jest',
+        '^.+\\.tsx?$': 'ts-jest',
+        '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
+            '<rootDir>/fileTransformer.js',
+    },
+    transformIgnorePatterns: ['/node_modules/(?!@react-native|react-native)/'],
 };
