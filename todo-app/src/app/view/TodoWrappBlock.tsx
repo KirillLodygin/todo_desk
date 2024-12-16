@@ -25,12 +25,12 @@ export const TodoWrappBlock = () => {
       <div className="mx-auto mt-20">
         <h1 className="text-xl text-gray-700 tracking-wider text-center mb-10">todos</h1>
         <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-6">
-          <NewTaskBlock tasks={todosArr.map((todo) => todo.label)} />
+          <NewTaskBlock tasks={todosArr.length ? todosArr.map((todo) => todo.label) : []} />
 
           <TodosBlock todos={filteredTodos} />
 
           <CounterAndFilters
-            leftTodosCount={todosArr.filter((item: todoType) => item.isCompleted).length}
+            leftTodosCount={todosArr.length ? todosArr.filter((item: todoType) => item.isCompleted).length : 0}
             allTodosCount={todosArr.length}
             currentFilter={currentFilter}
           />
