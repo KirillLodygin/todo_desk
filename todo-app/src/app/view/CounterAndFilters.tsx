@@ -17,6 +17,14 @@ export const CounterAndFilters: React.FC<Props> = ({
 }) => {
   const dispatch = useAppDispatch()
 
+  const onFilterButtonClick = (val: string) => {
+    dispatch(setNewFilter(val))
+  }
+
+    const onResetButtonClick = () => {
+        dispatch(clearCompleted())
+    }
+
   return (
     <div className="flex gap-4 border-t text-xs text-gray-500 mt-20 py-5">
       <div className="flex gap-2 flex flex-col items-stretch gap-2 h-full justify-center">
@@ -30,7 +38,7 @@ export const CounterAndFilters: React.FC<Props> = ({
             className={`px-4 py-2 bg-transparent ${currentFilter === item && allTodosCount ? `outline-none border-2 border-pink-300` : ''}`}
             key={item}
             onClick={() => {
-              dispatch(setNewFilter(item))
+              onFilterButtonClick(item)
             }}
           >
             {item}
@@ -41,7 +49,7 @@ export const CounterAndFilters: React.FC<Props> = ({
       <button
         className="px-4 py-2 bg-transparent"
         onClick={() => {
-          dispatch(clearCompleted())
+            onResetButtonClick()
         }}
       >
         Clear completed

@@ -1,6 +1,5 @@
 import React from 'react'
-import { useEffect, useState } from 'react'
-import { useAppDispatch, useAppSelector } from '../hooks'
+import { useAppSelector } from '../hooks'
 
 import { NewTaskBlock } from './NewTasKBlock'
 import { TodosBlock } from './TodosBlock'

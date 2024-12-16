@@ -8,7 +8,7 @@ interface Props {
   label: string
 }
 
-export const CustomCheckbox = ({ isChecked = false, label = '' }) => {
+export const CustomCheckbox: React.FC<Props> = ({ isChecked, label }) => {
   const dispatch = useAppDispatch()
 
   const [checked, setChecked] = useState(isChecked)
